@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Contact - PDFGen{% endblock %}
+
+{% block body %}
+<h1 class="page-title fade-in">Modifier Contact</h1>
+<p class="page-sub fade-in fade-in-1">Modifiez les informations de {{ contact.firstname }} {{ contact.lastname }}</p>
+
+<div class="row">
+    <div class="col-lg-6 fade-in fade-in-2">
+        <div class="card-dark">
+            <div class="card-head">
+                <i class="bi bi-person-vcard-fill"></i> Informations du contact
+            </div>
+            <div class="card-pad">
+                <form action="{{ path('app_contact_edit', {id: contact.id}) }}" method="POST">
+                    <div class="mb-4">
+                        <label for="firstname" class="form-label">Prenom</label>
+                        <input type="text" class="form-control" id="firstname" name="firstname"
+                               value="{{ contact.firstname }}" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="lastname" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="lastname" name="lastname"
+                               value="{{ contact.lastname }}" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               value="{{ contact.email }}" required>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn-lime">
+                            <i class="bi bi-check-lg"></i> Enregistrer
+                        </button>
+                        <a href="{{ path('app_contact_index') }}" class="btn-outline">
+                            <i class="bi bi-x-lg"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

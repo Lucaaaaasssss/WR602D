@@ -1,0 +1,216 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Plans - PDFGen{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .plan-card {
+        background: var(--forest);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 40px 32px;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .plan-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--lime);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .plan-card.featured {
+        border-color: var(--lime);
+        background: linear-gradient(180deg, rgba(222, 252, 166, 0.08) 0%, var(--forest) 100%);
+    }
+
+    .plan-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: var(--lime);
+        color: var(--forest);
+        padding: 4px 14px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .plan-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        margin: 0 auto 24px;
+        font-size: 1.8rem;
+    }
+
+    .plan-icon.free {
+        background: rgba(247, 255, 232, 0.06);
+        color: var(--text-dim);
+    }
+
+    .plan-icon.basic {
+        background: rgba(222, 252, 166, 0.1);
+        color: var(--lime);
+    }
+
+    .plan-icon.premium {
+        background: var(--lime);
+        color: var(--forest);
+    }
+
+    .plan-name {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+        letter-spacing: -0.3px;
+    }
+
+    .plan-price {
+        margin: 24px 0;
+    }
+
+    .plan-price .amount {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--lime);
+        line-height: 1;
+        letter-spacing: -1.5px;
+    }
+
+    .plan-price .period {
+        color: var(--text-dim);
+        font-size: 0.9rem;
+    }
+
+    .plan-price .old-price {
+        color: var(--text-dim);
+        text-decoration: line-through;
+        font-size: 1rem;
+        margin-bottom: 4px;
+    }
+
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 28px 0;
+        text-align: left;
+    }
+
+    .plan-features li {
+        padding: 11px 0;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-mid);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9rem;
+    }
+
+    .plan-features li:last-child { border-bottom: none; }
+
+    .plan-features li i { color: var(--lime); font-size: 1rem; }
+
+    .plan-features li.disabled {
+        color: var(--text-dim);
+        opacity: 0.4;
+    }
+
+    .plan-features li.disabled i { color: var(--text-dim); }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="text-center mb-5">
+    <h1 class="page-title fade-in">Nos Plans</h1>
+    <p class="page-sub fade-in fade-in-1" style="margin-bottom:0;">Choisissez le plan qui correspond a vos besoins</p>
+</div>
+
+<div class="row g-4 justify-content-center">
+    {% for plan in plans %}
+    <div class="col-lg-4 col-md-6 fade-in fade-in-{{ loop.index }}">
+        <div class="plan-card {% if plan.name == 'Premium' %}featured{% endif %}">
+            {% if plan.name == 'Premium' %}
+            <div class="plan-badge">Populaire</div>
+            {% endif %}
+
+            <div class="plan-icon {% if plan.name == 'Free' %}free{% elseif plan.name == 'Basic' %}basic{% else %}premium{% endif %}">
+                {% if plan.name == 'Free' %}
+                <i class="bi bi-gift-fill"></i>
+                {% elseif plan.name == 'Basic' %}
+                <i class="bi bi-star-fill"></i>
+                {% else %}
+                <i class="bi bi-gem"></i>
+                {% endif %}
+            </div>
+
+            <h3 class="plan-name">{{ plan.name }}</h3>
+
+            <div class="plan-price">
+                {% if plan.specialPrice and plan.specialPriceFrom and plan.specialPriceTo %}
+                <div class="old-price">{{ plan.price }} EUR</div>
+                <span class="amount">{{ plan.specialPrice }}</span>
+                {% else %}
+                <span class="amount">{{ plan.price }}</span>
+                {% endif %}
+                <span class="period">EUR / mois</span>
+            </div>
+
+            {% if plan.description %}
+            <p style="color: var(--text-dim); font-size: 0.9rem;">{{ plan.description }}</p>
+            {% endif %}
+
+            <ul class="plan-features">
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    <strong>{{ plan.limitGeneration }}</strong>&nbsp;generations / mois
+                </li>
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    Conversion HTML vers PDF
+                </li>
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    Conversion URL vers PDF
+                </li>
+                <li class="{% if plan.name == 'Free' %}disabled{% endif %}">
+                    <i class="bi bi-{% if plan.name != 'Free' %}check-circle-fill{% else %}x-circle{% endif %}"></i>
+                    Support prioritaire
+                </li>
+                <li class="{% if plan.name != 'Premium' %}disabled{% endif %}">
+                    <i class="bi bi-{% if plan.name == 'Premium' %}check-circle-fill{% else %}x-circle{% endif %}"></i>
+                    Acces API
+                </li>
+            </ul>
+
+            <button class="btn-lime" style="width:100%;justify-content:center;">
+                {% if plan.price == '0.00' %}
+                <i class="bi bi-rocket-takeoff"></i> Commencer gratuitement
+                {% else %}
+                <i class="bi bi-credit-card"></i> Choisir ce plan
+                {% endif %}
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="card-dark">
+            <div class="card-pad">
+                <div class="empty-state">
+                    <i class="bi bi-gem"></i>
+                    <h4>Aucun plan disponible</h4>
+                    <p>Les plans seront bientot disponibles</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -25,7 +25,7 @@ class UserContact
     private ?string $email = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
 
     #[ORM\ManyToMany(targetEntity: Generation::class, mappedBy: 'userContacts')]
