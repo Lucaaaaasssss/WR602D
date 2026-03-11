@@ -47,6 +47,9 @@ class Plan
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripePriceId = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -177,4 +180,7 @@ class Plan
         $this->createdAt = $createdAt;
         return $this;
     }
+
+    public function getStripePriceId(): ?string { return $this->stripePriceId; }
+    public function setStripePriceId(?string $id): static { $this->stripePriceId = $id; return $this; }
 }
