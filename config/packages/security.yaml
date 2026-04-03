@@ -18,11 +18,12 @@ security:
             form_login:
                 login_path: app_login
                 check_path: app_login
-                default_target_path: app_dashboard
-                enable_csrf: true
+                enable_csrf: false
+                success_handler: App\Security\LoginSuccessHandler
+                failure_handler: App\Security\LoginFailureHandler
             logout:
                 path: app_logout
-                target: app_dashboard
+                target: 'http://localhost:5173/'
 
     access_control: []
 

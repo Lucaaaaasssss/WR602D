@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Generation;
+use App\Repository\GenerationRepository;
+use App\Repository\PlanRepository;
 use App\Service\GotenbergService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,13 +18,41 @@ class PdfController extends AbstractController
     public function __construct(
         private GotenbergService $gotenbergService,
         private EntityManagerInterface $entityManager,
+        private GenerationRepository $generationRepository,
+        private PlanRepository $planRepository,
     ) {
+    }
+
+    private function checkLimit(): ?Response
+    {
+        $user = $this->getUser();
+        if (!$user) return null;
+
+        $plan = null;
+        foreach ($user->getRoles() as $role) {
+            $plan = $this->planRepository->findOneBy(['role' => $role, 'active' => true]);
+            if ($plan) break;
+        }
+
+        $limit = $plan ? $plan->getLimitGeneration() : 5;
+        if ($limit >= 999) return null; // illimité
+
+        $used = $this->generationRepository->countThisMonth($user);
+        if ($used >= $limit) {
+            return new Response(
+                json_encode(['error' => "Limite atteinte : votre plan autorise $limit générations par mois. Passez à un plan supérieur."]),
+                Response::HTTP_FORBIDDEN,
+                ['Content-Type' => 'application/json']
+            );
+        }
+
+        return null;
     }
 
     #[Route('', name: 'app_pdf_page', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('pdf/index.html.twig');
+        return new \Symfony\Component\HttpFoundation\RedirectResponse('http://localhost:5173/history');
     }
 
     #[Route('/generate', name: 'app_pdf_generate', methods: ['GET', 'POST'])]
@@ -57,6 +87,8 @@ class PdfController extends AbstractController
 </html>
 HTML;
 
+        if ($limit = $this->checkLimit()) return $limit;
+
         $htmlContent = $request->request->get('html', sprintf($defaultHtml, date('d/m/Y H:i:s')));
 
         try {
@@ -89,6 +121,8 @@ HTML;
             $this->addFlash('error', 'Veuillez creer un compte ou vous connecter pour convertir une URL en PDF.');
             return $this->redirectToRoute('app_pdf_page');
         }
+
+        if ($limit = $this->checkLimit()) return $limit;
 
         $url = $request->query->get('url') ?? $request->request->get('url');
 

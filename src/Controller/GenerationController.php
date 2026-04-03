@@ -2,9 +2,10 @@
 
 namespace App\Controller;
 
-use App\Entity\Generation;
 use App\Repository\GenerationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -12,31 +13,27 @@ use Symfony\Component\Routing\Attribute\Route;
 class GenerationController extends AbstractController
 {
     #[Route('', name: 'app_generation_index', methods: ['GET'])]
-    public function index(GenerationRepository $generationRepository): Response
+    public function index(): Response
+    {
+        return new RedirectResponse('http://localhost:5173/history');
+    }
+
+    #[Route('/api', name: 'app_generation_api', methods: ['GET'])]
+    public function apiIndex(GenerationRepository $generationRepository): JsonResponse
     {
         $user = $this->getUser();
 
-        if ($user) {
-            $generations = $generationRepository->findBy(['user' => $user], ['createdAt' => 'DESC']);
-        } else {
-            $generations = [];
+        if (!$user) {
+            return $this->json(['error' => 'Non authentifié'], 401);
         }
 
-        return $this->render('generation/index.html.twig', [
-            'generations' => $generations,
-        ]);
-    }
+        $generations = $generationRepository->findBy(['user' => $user], ['createdAt' => 'DESC']);
 
-    #[Route('/{id}', name: 'app_generation_show', methods: ['GET'])]
-    public function show(Generation $generation): Response
-    {
-        if ($this->getUser() && $generation->getUser() !== $this->getUser()) {
-            $this->addFlash('error', 'Vous n\'avez pas acces a cette generation.');
-            return $this->redirectToRoute('app_generation_index');
-        }
-
-        return $this->render('generation/show.html.twig', [
-            'generation' => $generation,
-        ]);
+        return $this->json(array_map(fn($g) => [
+            'id'        => $g->getId(),
+            'file'      => $g->getFile(),
+            'type'      => $g->getType(),
+            'createdAt' => $g->getCreatedAt()?->format('Y-m-d H:i:s'),
+        ], $generations));
     }
 }

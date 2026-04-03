@@ -8,6 +8,9 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     gotenberg_url: '%env(GOTENBERG_URL)%'
+    stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
+    stripe_webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+    share_dir: '%kernel.project_dir%/var/share'
 
 services:
     # default configuration for services in *this* file
@@ -26,3 +29,24 @@ services:
     App\Service\GotenbergService:
         arguments:
             $gotenbergUrl: '%gotenberg_url%'
+
+    App\Controller\PaymentController:
+        arguments:
+            $stripeSecretKey: '%stripe_secret_key%'
+            $stripeWebhookSecret: '%stripe_webhook_secret%'
+
+    App\Controller\ConvertController:
+        arguments:
+            $shareDir: '%share_dir%'
+
+    App\Service\MailerService:
+        arguments:
+            $from: '%env(MAILER_FROM)%'
+
+    App\Command\HandleQueueCommand:
+        arguments:
+            $shareDir: '%share_dir%'
+
+    App\Controller\QueueController:
+        arguments:
+            $shareDir: '%share_dir%'
