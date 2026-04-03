@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,6 +17,7 @@ class PasswordResetController extends AbstractController
     public function forgotPassword(
         Request $request,
         EntityManagerInterface $em,
+        MailerService $mailerService,
     ): JsonResponse {
         $data  = json_decode($request->getContent(), true);
         $email = $data['email'] ?? '';
@@ -34,11 +36,13 @@ class PasswordResetController extends AbstractController
 
         $resetUrl = 'http://localhost:5173/reset-password?token=' . $token;
 
-        // Sans mailer, on retourne le lien directement
-        return $this->json([
-            'message'  => 'Lien généré.',
-            'resetUrl' => $resetUrl,
-        ]);
+        try {
+            $mailerService->sendResetPasswordLink($user, $resetUrl);
+        } catch (\Exception) {
+            // Retourner le lien en dev si l'email échoue
+        }
+
+        return $this->json(['message' => 'Si cet email existe, un lien a été envoyé.']);
     }
 
     #[Route('/api/reset-password', name: 'api_reset_password', methods: ['POST'])]

@@ -31,4 +31,20 @@ class GenerationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function countToday($user): int
+    {
+        $from = new \DateTime('today 00:00:00');
+        $to   = new \DateTime('today 23:59:59');
+
+        return $this->createQueryBuilder('g')
+            ->select('COUNT(g.id)')
+            ->where('g.user = :user')
+            ->andWhere('g.createdAt BETWEEN :from AND :to')
+            ->setParameter('user', $user)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

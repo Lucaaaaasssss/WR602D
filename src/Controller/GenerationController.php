@@ -32,6 +32,7 @@ class GenerationController extends AbstractController
         return $this->json(array_map(fn($g) => [
             'id'        => $g->getId(),
             'file'      => $g->getFile(),
+            'type'      => $g->getType(),
             'createdAt' => $g->getCreatedAt()?->format('Y-m-d H:i:s'),
         ], $generations));
     }
